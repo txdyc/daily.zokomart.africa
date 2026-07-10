@@ -66,3 +66,19 @@ def test_quality_gate_raises_on_thin_page():
             FetchedPage(url="https://x/d", html="<html><h1>Only a title</h1><p>Too short.</p></html>"),
             _site(),
         )
+
+
+def test_relative_image_url_is_resolved():
+    html = (
+        '<html><head>'
+        '<meta property="og:title" content="Test Article">'
+        '<meta property="og:image" content="../../public/img/logo.jpg">'
+        '</head><body>'
+        f'<p>{"a" * 50}</p><p>{"b" * 50}</p>'
+        '</body></html>'
+    )
+    got = extract(
+        FetchedPage(url="https://news.example.com/articles/123/test", html=html),
+        _site(),
+    )
+    assert got.main_image_url == "https://news.example.com/public/img/logo.jpg"

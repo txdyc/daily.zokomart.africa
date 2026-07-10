@@ -37,7 +37,8 @@ SITES = [
     ("SN", "Dakaractu", "https://www.dakaractu.com", "fr", "rss",
      "https://www.dakaractu.com/xml/syndication.rss", None, None, None),
     ("CI", "Abidjan.net", "https://news.abidjan.net", "fr", "listing",
-     None, "https://news.abidjan.net/", None, None),
+     None, "https://news.abidjan.net/",
+     "a[href*='/articles/']", ".article-content"),
     ("CI", "Koaci", "https://www.koaci.com", "fr", "listing",
      None, "https://www.koaci.com/", None, None),
 ]

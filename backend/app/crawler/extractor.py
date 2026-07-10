@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
@@ -22,6 +23,10 @@ def extract(page: FetchedPage, site: Site) -> ExtractedArticle:
         article = _extract_with_selectors(soup, site)
     else:
         article = _extract_generic(soup, page.markdown)
+    if article.main_image_url and not article.main_image_url.startswith(
+        ("http://", "https://", "data:")
+    ):
+        article.main_image_url = urljoin(page.url, article.main_image_url)
     if not _passes_quality_gate(article):
         raise ExtractionFailed(
             f"quality gate failed for {page.url}: "
