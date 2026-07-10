@@ -48,6 +48,11 @@ def _extract_with_selectors(soup: BeautifulSoup, site: Site) -> ExtractedArticle
         paragraphs = _clean_paragraphs(
             p.get_text(" ", strip=True) for p in body_root.find_all("p")
         )
+        # Fallback: some sites (e.g. Dakaractu) use <br> instead of <p>
+        if not paragraphs:
+            for br in body_root.find_all("br"):
+                br.replace_with("\n")
+            paragraphs = _clean_paragraphs(body_root.get_text(strip=True).split("\n"))
 
     image = None
     if site.image_selector:
