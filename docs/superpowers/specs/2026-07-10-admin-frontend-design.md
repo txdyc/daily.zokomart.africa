@@ -137,7 +137,8 @@ Two sections on one page:
 - `paragraphs.spec.ts`: `splitParagraphs("a\n\nb\n\nc") → ["a","b","c"]`; blank/whitespace
   segments dropped; `joinParagraphs` round-trips; CRLF input normalized.
 - `auth.spec.ts`: guard redirects unauthenticated navigation to `/login?redirect=...`;
-  401 interceptor clears localStorage token; login stores token.
+  401 interceptor clears localStorage token (login's token storage is covered by the
+  live walkthrough — mocking axios for it isn't worth the brittleness).
 - Everything else is Element Plus plumbing verified live (Task-level manual verification
   against the running backend, same approach as Plans 1–3).
 
