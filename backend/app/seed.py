@@ -20,7 +20,7 @@ SITES = [
     # (country_code, name, base_url, language, discovery, feed_url, listing_url,
     #  listing_selector, body_selector)
     ("NG", "Premium Times", "https://www.premiumtimesng.com", "en", "rss",
-     "https://www.premiumtimesng.com/feed", None, None, None),
+     "https://www.premiumtimesng.com/feed", None, None, ".entry-content"),
     ("NG", "Punch", "https://punchng.com", "en", "rss",
      "https://punchng.com/feed/", None, None, None),
     ("NG", "Channels TV", "https://www.channelstv.com", "en", "rss",
