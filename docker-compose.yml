@@ -19,5 +19,25 @@ services:
     # ports:
     #   - "3306:3306"
 
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: mysql+pymysql://zokodaily:${MYSQL_PASSWORD}@mysql:3306/zokodaily?charset=utf8mb4
+      JWT_SECRET: ${JWT_SECRET}
+      SCHEDULER_ENABLED: "true"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    # Chromium needs shared-memory headroom; the 64 MB default crashes it.
+    shm_size: "1g"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+    # Exactly ONE replica: APScheduler runs in-process; a second replica double-crawls.
+
 volumes:
   mysql-data:
