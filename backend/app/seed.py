@@ -24,7 +24,7 @@ SITES = [
     ("NG", "Punch", "https://punchng.com", "en", "rss",
      "https://punchng.com/feed/", None, None, None),
     ("NG", "Channels TV", "https://www.channelstv.com", "en", "rss",
-     "https://www.channelstv.com/feed/", None, None, None),
+     "https://www.channelstv.com/feed/", None, None, ".post-content"),
     ("GH", "GhanaWeb", "https://www.ghanaweb.com", "en", "listing",
      None, "https://www.ghanaweb.com/GhanaHomePage/NewsArchive/",
      ".left_artl_list a", ".article-content-area"),
