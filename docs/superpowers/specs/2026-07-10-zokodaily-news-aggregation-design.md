@@ -132,6 +132,9 @@ interleaved view on the H5 detail page.
 
 UI languages: 中文 / English (vue-i18n, toggle persisted in localStorage).
 
+> **Visual design:** approved colors, typography, and component treatments are specified in
+> [2026-07-10-h5-ui-design.md](2026-07-10-h5-ui-design.md) — Plan 3 must follow it.
+
 ### Homepage
 
 - Header: logo top-left + "ZokoDaily" text; top-right: UI language switch + search button
