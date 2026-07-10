@@ -1,0 +1,21 @@
+:root {
+  --brand-50: #e1f5ee;
+  --brand-200: #5dcaa5;
+  --brand-500: #1d9e75;
+  --brand-700: #085041;
+  --brand-900: #04342c;
+
+  --bg: #ffffff;
+  --surface: #f7f6f3;
+  --border: #e5e3dc;
+  --text-primary: #1f1f1d;
+  --text-secondary: #5f5e5a;
+  --text-muted: #93918a;
+
+  --radius-card: 10px;
+  --radius-pill: 999px;
+
+  --van-primary-color: var(--brand-500);
+  --van-list-text-color: var(--text-muted);
+  --van-pull-refresh-head-text-color: var(--text-muted);
+}

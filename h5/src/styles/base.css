@@ -1,0 +1,33 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, "PingFang SC", "Noto Sans SC", sans-serif;
+  color: var(--text-primary);
+  background: var(--surface);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.hairline {
+  border-bottom: 1px solid var(--border);
+}
+@media (min-resolution: 2dppx) {
+  .hairline {
+    border-bottom-width: 0.5px;
+  }
+}
