@@ -40,7 +40,8 @@ SITES = [
      None, "https://news.abidjan.net/",
      "a[href*='/articles/']", ".article-content"),
     ("CI", "Koaci", "https://www.koaci.com", "fr", "listing",
-     None, "https://www.koaci.com/", None, None),
+     None, "https://www.koaci.com/",
+     "a[href*='/article/']", ".KText1"),
 ]
 
 CONFIG_DEFAULTS = {
