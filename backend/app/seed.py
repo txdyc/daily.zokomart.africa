@@ -29,7 +29,7 @@ SITES = [
      None, "https://www.ghanaweb.com/GhanaHomePage/NewsArchive/",
      ".left_artl_list a", ".article-content-area"),
     ("GH", "MyJoyOnline", "https://www.myjoyonline.com", "en", "rss",
-     "https://www.myjoyonline.com/feed/", None, None, None),
+     "https://www.myjoyonline.com/feed/", None, None, ".article-body"),
     ("GH", "Graphic Online", "https://www.graphic.com.gh", "en", "listing",
      None, "https://www.graphic.com.gh/news.html", None, None),
     ("SN", "Seneweb", "https://www.seneweb.com", "fr", "listing",
