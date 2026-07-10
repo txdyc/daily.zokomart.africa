@@ -1,5 +1,5 @@
 import { createPinia } from "pinia";
-import { List, Popup, PullRefresh, Swipe, SwipeItem } from "vant";
+import { List, Popup, PullRefresh, Swipe, SwipeItem, Tab, Tabs } from "vant";
 import { createApp } from "vue";
 import "vant/lib/index.css";
 

@@ -11,6 +11,7 @@ export const useFeedStore = defineStore("feed", {
     page: 0,
     total: 0,
     keyword: "",
+    country: "",
     loading: false,
     error: "",
   }),
@@ -33,6 +34,7 @@ export const useFeedStore = defineStore("feed", {
           page: this.page + 1,
           page_size: PAGE_SIZE,
           search: this.keyword || undefined,
+          country: this.country || undefined,
         });
         this.page = data.page;
         this.total = data.total;
@@ -45,6 +47,10 @@ export const useFeedStore = defineStore("feed", {
     },
     async search(keyword: string) {
       this.keyword = keyword.trim();
+      await this.refresh();
+    },
+    async setCountry(code: string) {
+      this.country = code;
       await this.refresh();
     },
   },

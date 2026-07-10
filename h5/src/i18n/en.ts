@@ -16,6 +16,13 @@ export default {
   systemShare: "More",
   wechat: "WeChat",
   wechatHint: "Scan with WeChat, or copy the link to share",
+  allCountries: "All",
+  countries: {
+    GH: "Ghana",
+    NG: "Nigeria",
+    CI: "Côte d'Ivoire",
+    SN: "Senegal",
+  },
   categories: {
     politics: "Politics",
     business: "Business",

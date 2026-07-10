@@ -16,6 +16,13 @@ export default {
   systemShare: "更多",
   wechat: "微信",
   wechatHint: "用微信扫一扫，或复制链接分享",
+  allCountries: "全部",
+  countries: {
+    GH: "加纳",
+    NG: "尼日利亚",
+    CI: "科特迪瓦",
+    SN: "塞内加尔",
+  },
   categories: {
     politics: "政治",
     business: "商业",
