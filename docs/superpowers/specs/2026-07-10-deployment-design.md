@@ -1,6 +1,6 @@
 # ZokoDaily Plan 5 — Deployment Design (Docker Compose)
 
-**Date:** 2026-07-10
+**Date:** 2026-07-10 (updated after the Plans 2–4 verification pass and fixes)
 **Status:** Draft — pending user review
 **Parent spec:** [2026-07-10-zokodaily-news-aggregation-design.md](2026-07-10-zokodaily-news-aggregation-design.md) §11
 **Deploys:** the Plan 1–2 backend (`backend/`), Plan 3 H5 site (`h5/`), Plan 4 admin (`admin/`).
@@ -45,8 +45,10 @@ docs/DEPLOY.md              # runbook: first deploy, update, seed, backup hint
 ### 3.2 `backend`
 
 - `backend/Dockerfile`: `python:3.12-slim` base → install `uv` → `uv sync --frozen
-  --no-dev` → `uv run playwright install --with-deps chromium` (Crawl4AI's browser;
-  this makes the image large, ~1.5 GB — accepted, it's the crawler's core capability).
+  --no-dev` → `uv run playwright install --with-deps chromium`. Chromium in the image is
+  **required**, not optional: article fetching (Crawl4AI) *and* listing-page discovery
+  (`fetch_text_rendered` — added after verification showed JS-rendered listing sites like
+  GhanaWeb serve zero anchors to plain HTTP) both depend on it. Image lands ~1.5 GB — accepted.
 - Entrypoint (`docker-entrypoint.sh`): run `python -m app.seed` (idempotent — creates
   tables via `create_all`, seeds countries/sites/admin/config only if missing), then
   `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
@@ -95,7 +97,11 @@ documented one-liner: `docker compose exec backend python -c "..."` that rehashe
 
 - **First deploy:** copy `.env.example` → `.env`, fill secrets, `docker compose up -d --build`,
   wait for health, log into `/admin/`, change the admin password, set the AI key in Settings,
-  run test-translation, trigger one crawl-now and confirm articles flow to the H5 site.
+  run test-translation, then **crawl-now every seeded site once** and correct any broken
+  feed/listing URLs in the admin sites form. Site reachability is network-dependent — the
+  2026-07-10 verification (from the dev box) found Punch's feed bot-filtered empty and
+  Seneweb's listing URL 404ing; results from the production host may differ, so this
+  check belongs to the deploy runbook, not to code.
 - **Update:** `git pull && docker compose up -d --build` (frontends rebuild inside the
   nginx image; backend restart re-runs the idempotent seed harmlessly).
 - **Manual ops:** trigger seed (`docker compose exec backend python -m app.seed`),
