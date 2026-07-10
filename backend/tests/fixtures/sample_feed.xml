@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Punch</title>
+    <link>https://punchng.com</link>
+    <item>
+      <title>Story one</title>
+      <link>https://punchng.com/story-one/?utm_source=rss</link>
+      <pubDate>Thu, 09 Jul 2026 10:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Story two</title>
+      <link>https://punchng.com/story-two/#comments</link>
+      <pubDate>Thu, 09 Jul 2026 09:00:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Story one duplicate</title>
+      <link>https://punchng.com/story-one/</link>
+    </item>
+    <item>
+      <title>Syndicated external</title>
+      <link>https://partner.example/wire-story</link>
+    </item>
+  </channel>
+</rss>
