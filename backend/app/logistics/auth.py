@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import get_db
 from app.logistics.models import UserAccount
-from app.security import ALGORITHM
+from app.models import AdminUser
+from app.security import ALGORITHM, get_current_admin
 
 _bearer = HTTPBearer(auto_error=False)
 
@@ -57,3 +58,18 @@ def get_principal(
             raise HTTPException(status_code=401, detail="Account not found")
         return ("user", user)
     return ("admin", payload["sub"])
+
+
+def require_roles(*roles: str):
+    """Dependency factory: staff member whose role is in `roles`, else 403."""
+
+    def dep(
+        username: str = Depends(get_current_admin),
+        db: Session = Depends(get_db),
+    ) -> AdminUser:
+        user = db.query(AdminUser).filter_by(username=username).one_or_none()
+        if user is None or user.role not in roles:
+            raise HTTPException(status_code=403, detail="Insufficient role")
+        return user
+
+    return dep

@@ -38,8 +38,10 @@ app.include_router(admin_config.router, prefix="/api/admin/config", tags=["admin
 app.include_router(admin_crawl.router, prefix="/api/admin", tags=["admin"])
 
 from app.logistics.api import h5_auth
+from app.logistics.api.admin import staff as lg_admin_staff
 
 app.include_router(h5_auth.router, prefix="/api/lg/auth", tags=["lg-h5"])
+app.include_router(lg_admin_staff.router, prefix="/api/admin/lg/staff", tags=["lg-admin"])
 
 
 @app.get("/api/health")
