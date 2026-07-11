@@ -12,7 +12,11 @@ export const useFeedStore = defineStore("feed", {
     total: 0,
     keyword: "",
     country: "",
+    // `loading` drives van-list's v-model:loading, which the component itself
+    // sets to true before emitting `load` — so it can't double as the
+    // in-flight guard. `inFlight` is the real dedupe flag.
     loading: false,
+    inFlight: false,
     error: "",
   }),
   getters: {
@@ -26,7 +30,8 @@ export const useFeedStore = defineStore("feed", {
       await this.loadMore();
     },
     async loadMore() {
-      if (this.loading) return;
+      if (this.inFlight) return;
+      this.inFlight = true;
       this.loading = true;
       this.error = "";
       try {
@@ -42,6 +47,7 @@ export const useFeedStore = defineStore("feed", {
       } catch (e) {
         this.error = e instanceof Error ? e.message : String(e);
       } finally {
+        this.inFlight = false;
         this.loading = false;
       }
     },
