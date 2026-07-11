@@ -42,3 +42,14 @@ class SmsLog(Base):
     status: Mapped[str] = mapped_column(String(10))  # sent | failed
     response: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Attachment(Base):
+    __tablename__ = "lg_attachment"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)  # uuid4
+    owner_user_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(50))
+    size: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
