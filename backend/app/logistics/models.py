@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -160,6 +160,43 @@ class Vehicle(Base):
     insurance_cert_id: Mapped[str] = mapped_column(String(36))
     insurance_expiry: Mapped[date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(20), default=VEHICLE_PENDING)
+    review_remark: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+ROUTE_PENDING = "pending_review"
+ROUTE_APPROVED = "approved"
+ROUTE_REJECTED = "rejected"
+ROUTE_SUSPENDED = "suspended"
+ROUTE_STATUSES = (ROUTE_PENDING, ROUTE_APPROVED, ROUTE_REJECTED, ROUTE_SUSPENDED)
+
+
+class Route(Base):
+    """Driver-owned reusable template (PRD §8.1). Orders never book a Route directly."""
+
+    __tablename__ = "lg_route"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    driver_id: Mapped[int] = mapped_column(ForeignKey("lg_driver.id"), index=True)
+    origin_region: Mapped[str] = mapped_column(String(50))
+    origin_town: Mapped[str] = mapped_column(String(80))
+    dest_region: Mapped[str] = mapped_column(String(50))
+    dest_town: Mapped[str] = mapped_column(String(80))
+    via_towns: Mapped[list] = mapped_column(JSON, default=list)
+    frequency: Mapped[str] = mapped_column(String(10))  # daily | weekly | once
+    weekdays: Mapped[list] = mapped_column(JSON, default=list)  # 0=Mon..6=Sun, weekly only
+    once_date: Mapped[date | None] = mapped_column(Date, nullable=True)  # once only
+    depart_time: Mapped[str] = mapped_column(String(5))  # "08:00"
+    est_duration_hours: Mapped[int] = mapped_column(Integer)
+    default_vehicle_id: Mapped[int] = mapped_column(ForeignKey("lg_vehicle.id"))
+    cargo_types: Mapped[list] = mapped_column(JSON, default=list)
+    prohibited_notes: Mapped[str] = mapped_column(Text, default="")
+    rate_per_ton: Mapped[float | None] = mapped_column(Float, nullable=True)  # GHS
+    rate_per_m3: Mapped[float | None] = mapped_column(Float, nullable=True)  # GHS
+    min_charge: Mapped[float | None] = mapped_column(Float, nullable=True)  # GHS
+    negotiable: Mapped[bool] = mapped_column(Boolean, default=False)
+    status: Mapped[str] = mapped_column(String(20), default=ROUTE_PENDING)
     review_remark: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
