@@ -39,4 +39,6 @@ def get_current_admin(
         )
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+    if payload.get("scope") == "h5":
+        raise HTTPException(status_code=401, detail="Not an admin token")
     return payload["sub"]

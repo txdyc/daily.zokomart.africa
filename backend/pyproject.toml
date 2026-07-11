@@ -12,6 +12,7 @@ description = "ZokoDaily West Africa news aggregation backend"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
+    "python-multipart>=0.0.18",
     "uvicorn[standard]>=0.30",
     "sqlalchemy>=2.0",
     "pymysql>=1.1",
