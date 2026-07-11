@@ -216,3 +216,38 @@ class RouteOut(RouteIn):
     driver_id: int
     status: str
     review_remark: str
+
+
+class TripCreateIn(BaseModel):
+    route_id: int
+    depart_date: date
+    vehicle_id: int | None = None  # defaults to the route's default vehicle
+
+
+class CapacityAdjustIn(BaseModel):
+    manual_load_kg: float
+    manual_volume_m3: float
+    reason: str
+
+    @model_validator(mode="after")
+    def _non_negative(self):
+        if self.manual_load_kg < 0 or self.manual_volume_m3 < 0:
+            raise ValueError("adjustments cannot be negative")
+        return self
+
+
+class TripOut(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    route_id: int
+    vehicle_id: int
+    depart_date: date
+    depart_time: str
+    status: str
+    total_load_kg: float
+    total_volume_m3: float
+    used_load_kg: float
+    used_volume_m3: float
+    manual_load_kg: float
+    manual_volume_m3: float

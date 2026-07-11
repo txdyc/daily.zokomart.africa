@@ -225,3 +225,77 @@ class Trip(Base):
     manual_load_kg: Mapped[float] = mapped_column(Float, default=0.0)  # off-platform cargo
     manual_volume_m3: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class OperationLog(Base):
+    __tablename__ = "lg_operation_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    actor: Mapped[str] = mapped_column(String(50))  # username or phone
+    actor_type: Mapped[str] = mapped_column(String(10))  # staff | driver | shipper | system
+    action: Mapped[str] = mapped_column(String(40))
+    entity_type: Mapped[str] = mapped_column(String(20))
+    entity_id: Mapped[int] = mapped_column(Integer)
+    detail: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+ORDER_SUBMITTED = "submitted"
+ORDER_PRICE_CONFIRMED = "price_confirmed"
+ORDER_AWAITING_PICKUP = "awaiting_pickup"
+ORDER_IN_TRANSIT = "in_transit"
+ORDER_DELIVERED = "delivered"
+ORDER_COMPLETED = "completed"
+ORDER_CANCELLED = "cancelled"
+ORDER_EXCEPTION = "exception_closed"
+ORDER_STATUSES = (ORDER_SUBMITTED, ORDER_PRICE_CONFIRMED, ORDER_AWAITING_PICKUP,
+                  ORDER_IN_TRANSIT, ORDER_DELIVERED, ORDER_COMPLETED,
+                  ORDER_CANCELLED, ORDER_EXCEPTION)
+ORDER_ACTIVE_STATUSES = (ORDER_PRICE_CONFIRMED, ORDER_AWAITING_PICKUP,
+                         ORDER_IN_TRANSIT, ORDER_DELIVERED)
+
+
+class CustomerOrder(Base):
+    """Shipper order against a specific Trip (PRD §9, §10)."""
+
+    __tablename__ = "lg_customer_order"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    shipper_user_id: Mapped[int] = mapped_column(ForeignKey("lg_user_account.id"), index=True)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("lg_trip.id"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default=ORDER_SUBMITTED, index=True)
+    contact_name: Mapped[str] = mapped_column(String(100))
+    contact_phone: Mapped[str] = mapped_column(String(16))
+    pickup_region: Mapped[str] = mapped_column(String(50))
+    pickup_town: Mapped[str] = mapped_column(String(80))
+    pickup_details: Mapped[str] = mapped_column(String(300))
+    delivery_region: Mapped[str] = mapped_column(String(50))
+    delivery_town: Mapped[str] = mapped_column(String(80))
+    delivery_details: Mapped[str] = mapped_column(String(300))
+    consignee_name: Mapped[str] = mapped_column(String(100))
+    consignee_phone: Mapped[str] = mapped_column(String(16))
+    cargo_name: Mapped[str] = mapped_column(String(200))
+    cargo_category: Mapped[str] = mapped_column(String(50))
+    packaging: Mapped[str] = mapped_column(String(20))
+    pieces: Mapped[int] = mapped_column(Integer)
+    weight_kg: Mapped[float] = mapped_column(Float)
+    volume_m3: Mapped[float] = mapped_column(Float)
+    fragile: Mapped[bool] = mapped_column(Boolean, default=False)
+    needs_loading: Mapped[bool] = mapped_column(Boolean, default=False)
+    needs_pickup: Mapped[bool] = mapped_column(Boolean, default=False)
+    pickup_window: Mapped[str] = mapped_column(String(100))
+    remarks: Mapped[str] = mapped_column(Text, default="")
+    photo_ids: Mapped[list] = mapped_column(JSON, default=list)
+    freight_ghs: Mapped[float | None] = mapped_column(Float, nullable=True)
+    commission_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    commission_ghs: Mapped[float | None] = mapped_column(Float, nullable=True)
+    pickup_time: Mapped[str] = mapped_column(String(100), default="")
+    cancel_reason: Mapped[str] = mapped_column(Text, default="")
+    reject_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    price_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    departed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

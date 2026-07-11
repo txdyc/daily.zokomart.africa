@@ -111,3 +111,36 @@ def resume_route(
     route.status = ROUTE_APPROVED
     db.commit()
     return route
+
+
+@router.get("/{route_id}")
+def route_detail(route_id: int, db: Session = Depends(get_db)):
+    from datetime import date as _date
+
+    from app.logistics.capacity import remaining_load, remaining_volume
+    from app.logistics.models import ROUTE_APPROVED, TRIP_SCHEDULED, Trip
+
+    route = db.get(Route, route_id)
+    if route is None or route.status != ROUTE_APPROVED:
+        raise HTTPException(status_code=404, detail="Route not found")
+    vehicle = db.get(Vehicle, route.default_vehicle_id)
+    trips = (
+        db.query(Trip)
+        .filter(Trip.route_id == route.id, Trip.status == TRIP_SCHEDULED,
+                Trip.depart_date >= _date.today())
+        .order_by(Trip.depart_date).limit(14).all()
+    )
+    data = RouteOut.model_validate(route).model_dump(mode="json")
+    data["vehicle"] = {
+        "vehicle_type": vehicle.vehicle_type, "brand_model": vehicle.brand_model,
+        "max_load_kg": vehicle.max_load_kg, "max_volume_m3": vehicle.max_volume_m3,
+        "cargo_length_m": vehicle.cargo_length_m, "cargo_width_m": vehicle.cargo_width_m,
+        "cargo_height_m": vehicle.cargo_height_m,
+    }
+    data["upcoming_trips"] = [
+        {"trip_id": t.id, "depart_date": t.depart_date.isoformat(),
+         "depart_time": t.depart_time,
+         "remaining_load_kg": remaining_load(t), "remaining_volume_m3": remaining_volume(t)}
+        for t in trips
+    ]
+    return data
