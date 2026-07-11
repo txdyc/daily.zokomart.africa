@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -28,4 +28,17 @@ class OtpCode(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     used: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class SmsLog(Base):
+    __tablename__ = "lg_sms_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    phone: Mapped[str] = mapped_column(String(16))
+    kind: Mapped[str] = mapped_column(String(30))  # otp / audit_result / order / expiry ...
+    body: Mapped[str] = mapped_column(Text)
+    provider: Mapped[str] = mapped_column(String(20))
+    status: Mapped[str] = mapped_column(String(10))  # sent | failed
+    response: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
