@@ -37,6 +37,10 @@ app.include_router(admin_articles.router, prefix="/api/admin/articles", tags=["a
 app.include_router(admin_config.router, prefix="/api/admin/config", tags=["admin"])
 app.include_router(admin_crawl.router, prefix="/api/admin", tags=["admin"])
 
+from app.logistics.api import h5_auth
+
+app.include_router(h5_auth.router, prefix="/api/lg/auth", tags=["lg-h5"])
+
 
 @app.get("/api/health")
 def health():
