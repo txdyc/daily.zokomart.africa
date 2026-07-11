@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from typing import Literal
 import re
 from datetime import date
@@ -167,3 +167,52 @@ class BlacklistOut(BlacklistIn):
 
     id: int
     created_by: str
+
+
+class RouteIn(BaseModel):
+    origin_region: str
+    origin_town: str
+    dest_region: str
+    dest_town: str
+    via_towns: list[str] = []
+    frequency: Literal["daily", "weekly", "once"]
+    weekdays: list[int] = []
+    once_date: date | None = None
+    depart_time: str
+    est_duration_hours: int
+    default_vehicle_id: int
+    cargo_types: list[str]
+    prohibited_notes: str = ""
+    rate_per_ton: float | None = None
+    rate_per_m3: float | None = None
+    min_charge: float | None = None
+    negotiable: bool = False
+
+    @field_validator("depart_time")
+    @classmethod
+    def _time(cls, v: str) -> str:
+        h, _, m = v.partition(":")
+        if not (h.isdigit() and m.isdigit() and 0 <= int(h) <= 23 and 0 <= int(m) <= 59):
+            raise ValueError("depart_time must be HH:MM")
+        return f"{int(h):02d}:{int(m):02d}"
+
+    @model_validator(mode="after")
+    def _rules(self):
+        if self.frequency == "weekly" and not self.weekdays:
+            raise ValueError("weekly routes need weekdays")
+        if any(d < 0 or d > 6 for d in self.weekdays):
+            raise ValueError("weekdays are 0 (Mon) to 6 (Sun)")
+        if self.frequency == "once" and self.once_date is None:
+            raise ValueError("one-time routes need once_date")
+        if not self.negotiable and self.rate_per_ton is None and self.rate_per_m3 is None:
+            raise ValueError("set rate_per_ton or rate_per_m3, or mark negotiable")
+        return self
+
+
+class RouteOut(RouteIn):
+    model_config = {"from_attributes": True}
+
+    id: int
+    driver_id: int
+    status: str
+    review_remark: str
