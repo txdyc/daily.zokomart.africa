@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -52,4 +52,64 @@ class Attachment(Base):
     filename: Mapped[str] = mapped_column(String(255))
     content_type: Mapped[str] = mapped_column(String(50))
     size: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+DRIVER_DRAFT = "draft"
+DRIVER_PENDING = "pending_review"
+DRIVER_APPROVED = "approved"
+DRIVER_REJECTED = "rejected"
+DRIVER_FROZEN = "frozen"
+DRIVER_STATUSES = (DRIVER_DRAFT, DRIVER_PENDING, DRIVER_APPROVED, DRIVER_REJECTED, DRIVER_FROZEN)
+
+AVAILABILITY_ACCEPTING = "accepting"
+AVAILABILITY_PAUSED = "paused"
+
+
+class Driver(Base):
+    __tablename__ = "lg_driver"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("lg_user_account.id"), unique=True)
+    full_name: Mapped[str] = mapped_column(String(100))
+    gender: Mapped[str] = mapped_column(String(10))
+    date_of_birth: Mapped[date] = mapped_column(Date)
+    ghana_card_number: Mapped[str] = mapped_column(String(20), unique=True)
+    ghana_card_front_id: Mapped[str] = mapped_column(String(36))
+    ghana_card_back_id: Mapped[str] = mapped_column(String(36))
+    licence_number: Mapped[str] = mapped_column(String(30))
+    licence_class: Mapped[str] = mapped_column(String(5))
+    licence_expiry: Mapped[date] = mapped_column(Date)
+    licence_photo_id: Mapped[str] = mapped_column(String(36))
+    emergency_contact_name: Mapped[str] = mapped_column(String(100))
+    emergency_contact_phone: Mapped[str] = mapped_column(String(16))
+    status: Mapped[str] = mapped_column(String(20), default=DRIVER_DRAFT)
+    availability: Mapped[str] = mapped_column(String(10), default=AVAILABILITY_ACCEPTING)
+    review_remark: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class AuditRecord(Base):
+    """Immutable review decisions. Never updated or deleted (PRD XIII)."""
+
+    __tablename__ = "lg_audit_record"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    entity_type: Mapped[str] = mapped_column(String(20))  # driver | vehicle | route
+    entity_id: Mapped[int] = mapped_column(Integer)
+    action: Mapped[str] = mapped_column(String(20))  # approve | reject | freeze | unfreeze
+    reason: Mapped[str] = mapped_column(Text, default="")
+    actor: Mapped[str] = mapped_column(String(50))  # staff username
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Blacklist(Base):
+    __tablename__ = "lg_blacklist"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    value_type: Mapped[str] = mapped_column(String(20))  # phone | ghana_card | plate
+    value: Mapped[str] = mapped_column(String(30), index=True)
+    reason: Mapped[str] = mapped_column(Text, default="")
+    created_by: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
