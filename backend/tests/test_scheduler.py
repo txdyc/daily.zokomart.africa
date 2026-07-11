@@ -9,6 +9,7 @@ def test_build_scheduler_registers_all_jobs():
         "crawl-tier-2",
         "crawl-tier-3",
         "translation-sweep",
+        "lg-daily",
     }
     for job in jobs.values():
         assert job.max_instances == 1

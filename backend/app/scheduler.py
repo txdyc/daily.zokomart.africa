@@ -33,6 +33,18 @@ def translation_job() -> None:
             logger.info("translation sweep processed %d article(s)", processed)
 
 
+def lg_daily_job() -> None:
+    from app.db import SessionLocal
+    from app.logistics.sweep import expiry_sweep
+    from app.logistics.trips_service import generate_trips
+
+    with SessionLocal() as db:
+        created = generate_trips(db)
+        expiry_sweep(db)
+        if created:
+            logger.info("lg daily: generated %d trip(s)", created)
+
+
 def build_scheduler() -> BackgroundScheduler:
     sched = BackgroundScheduler()
     common = {"max_instances": 1, "coalesce": True}
@@ -40,4 +52,5 @@ def build_scheduler() -> BackgroundScheduler:
     sched.add_job(crawl_tier, "interval", hours=6, args=[2], id="crawl-tier-2", **common)
     sched.add_job(crawl_tier, "interval", days=1, args=[3], id="crawl-tier-3", **common)
     sched.add_job(translation_job, "interval", minutes=5, id="translation-sweep", **common)
+    sched.add_job(lg_daily_job, "cron", hour=1, minute=0, id="lg-daily", **common)
     return sched
