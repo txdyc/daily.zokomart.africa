@@ -13,6 +13,8 @@ from app.models.country import Country
 from app.models.crawl_run import CrawlRun
 from app.models.site import Site
 
+import app.logistics.models  # noqa: F401  (register lg_* tables on Base)
+
 __all__ = [
     "AdminUser",
     "AppConfig",
