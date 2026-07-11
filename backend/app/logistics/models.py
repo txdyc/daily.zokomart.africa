@@ -299,3 +299,38 @@ class CustomerOrder(Base):
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+COMMISSION_PENDING = "pending"
+COMMISSION_SETTLED = "settled"
+COMMISSION_WAIVED = "waived"
+
+
+class CommissionRecord(Base):
+    """Payable commission, created when an order completes (PRD §11)."""
+
+    __tablename__ = "lg_commission_record"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey("lg_customer_order.id"), unique=True)
+    driver_id: Mapped[int] = mapped_column(ForeignKey("lg_driver.id"), index=True)
+    freight_ghs: Mapped[float] = mapped_column(Float)
+    rate: Mapped[float] = mapped_column(Float)
+    amount_ghs: Mapped[float] = mapped_column(Float)
+    status: Mapped[str] = mapped_column(String(10), default=COMMISSION_PENDING, index=True)
+    method: Mapped[str] = mapped_column(String(20), default="")  # momo | bank | cash
+    reference: Mapped[str] = mapped_column(String(100), default="")
+    note: Mapped[str] = mapped_column(Text, default="")
+    settled_by: Mapped[str] = mapped_column(String(50), default="")
+    settled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class CsRemark(Base):
+    __tablename__ = "lg_cs_remark"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey("lg_customer_order.id"), index=True)
+    author: Mapped[str] = mapped_column(String(50))
+    body: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
