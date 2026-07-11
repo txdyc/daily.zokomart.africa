@@ -315,3 +315,24 @@ class ReassignIn(BaseModel):
 
 class RemarkIn(BaseModel):
     body: str
+
+
+class SettleIn(BaseModel):
+    method: Literal["momo", "bank", "cash"]
+    reference: str = ""
+
+
+class CommissionOut(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    order_id: int
+    driver_id: int
+    freight_ghs: float
+    rate: float
+    amount_ghs: float
+    status: str
+    method: str
+    reference: str
+    note: str
+    settled_by: str
