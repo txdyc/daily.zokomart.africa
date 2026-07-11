@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -125,3 +125,41 @@ class Notification(Base):
     body: Mapped[str] = mapped_column(Text, default="")
     read_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+VEHICLE_PENDING = "pending_review"
+VEHICLE_APPROVED = "approved"
+VEHICLE_REJECTED = "rejected"
+VEHICLE_DEACTIVATED = "deactivated"
+VEHICLE_STATUSES = (VEHICLE_PENDING, VEHICLE_APPROVED, VEHICLE_REJECTED, VEHICLE_DEACTIVATED)
+
+
+class Vehicle(Base):
+    __tablename__ = "lg_vehicle"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    driver_id: Mapped[int] = mapped_column(ForeignKey("lg_driver.id"), index=True)
+    plate_number: Mapped[str] = mapped_column(String(20), unique=True)
+    brand_model: Mapped[str] = mapped_column(String(100))
+    vehicle_type: Mapped[str] = mapped_column(String(30))
+    year: Mapped[int] = mapped_column(Integer)
+    vin: Mapped[str] = mapped_column(String(30), default="")
+    cargo_length_m: Mapped[float] = mapped_column(Float)
+    cargo_width_m: Mapped[float] = mapped_column(Float)
+    cargo_height_m: Mapped[float] = mapped_column(Float)
+    max_load_kg: Mapped[int] = mapped_column(Integer)
+    max_volume_m3: Mapped[float] = mapped_column(Float)
+    photo_front_id: Mapped[str] = mapped_column(String(36))
+    photo_left_id: Mapped[str] = mapped_column(String(36))
+    photo_right_id: Mapped[str] = mapped_column(String(36))
+    photo_rear_id: Mapped[str] = mapped_column(String(36))
+    photo_interior_id: Mapped[str] = mapped_column(String(36))
+    reg_cert_id: Mapped[str] = mapped_column(String(36))
+    roadworthy_cert_id: Mapped[str] = mapped_column(String(36))
+    roadworthy_expiry: Mapped[date] = mapped_column(Date)
+    insurance_cert_id: Mapped[str] = mapped_column(String(36))
+    insurance_expiry: Mapped[date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(20), default=VEHICLE_PENDING)
+    review_remark: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)

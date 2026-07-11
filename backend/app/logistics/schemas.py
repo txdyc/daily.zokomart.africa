@@ -114,3 +114,43 @@ class Paginated(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class VehicleIn(BaseModel):
+    plate_number: str
+    brand_model: str
+    vehicle_type: str
+    year: int
+    vin: str = ""
+    cargo_length_m: float
+    cargo_width_m: float
+    cargo_height_m: float
+    max_load_kg: int
+    max_volume_m3: float
+    photo_front_id: str
+    photo_left_id: str
+    photo_right_id: str
+    photo_rear_id: str
+    photo_interior_id: str
+    reg_cert_id: str
+    roadworthy_cert_id: str
+    roadworthy_expiry: date
+    insurance_cert_id: str
+    insurance_expiry: date
+
+    @field_validator("plate_number")
+    @classmethod
+    def _plate(cls, v: str) -> str:
+        v = v.strip().upper()
+        if not v:
+            raise ValueError("Plate number required")
+        return v
+
+
+class VehicleOut(VehicleIn):
+    model_config = {"from_attributes": True}
+
+    id: int
+    driver_id: int
+    status: str
+    review_remark: str
