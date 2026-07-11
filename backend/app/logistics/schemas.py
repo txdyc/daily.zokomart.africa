@@ -294,3 +294,24 @@ class OrderIn(BaseModel):
 
 class CancelIn(BaseModel):
     reason: str
+
+
+class ConfirmPriceIn(BaseModel):
+    freight_ghs: float
+    pickup_time: str
+    commission_ghs: float | None = None  # manual override
+    override_reason: str = ""
+
+    @model_validator(mode="after")
+    def _check(self):
+        if self.freight_ghs <= 0:
+            raise ValueError("freight must be positive")
+        return self
+
+
+class ReassignIn(BaseModel):
+    trip_id: int
+
+
+class RemarkIn(BaseModel):
+    body: str
