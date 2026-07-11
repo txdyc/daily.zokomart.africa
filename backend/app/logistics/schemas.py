@@ -1,5 +1,7 @@
 from pydantic import BaseModel, field_validator
 from typing import Literal
+import re
+from datetime import date
 
 from app.logistics.otp import normalize_phone
 
@@ -34,3 +36,60 @@ class StaffOut(BaseModel):
     id: int
     username: str
     role: str
+
+
+GHANA_CARD_RE = re.compile(r"^GHA-\d{9}-\d$")
+
+
+class DriverIn(BaseModel):
+    full_name: str
+    gender: Literal["male", "female"]
+    date_of_birth: date
+    ghana_card_number: str
+    ghana_card_front_id: str
+    ghana_card_back_id: str
+    licence_number: str
+    licence_class: Literal["B", "C", "D", "E", "F"]
+    licence_expiry: date
+    licence_photo_id: str
+    emergency_contact_name: str
+    emergency_contact_phone: str
+    submit: bool = True
+
+    @field_validator("ghana_card_number")
+    @classmethod
+    def _card_format(cls, v: str) -> str:
+        v = v.strip().upper()
+        if not GHANA_CARD_RE.fullmatch(v):
+            raise ValueError("Ghana Card number must match GHA-XXXXXXXXX-X")
+        return v
+
+    @field_validator("emergency_contact_phone")
+    @classmethod
+    def _phone(cls, v: str) -> str:
+        return normalize_phone(v)
+
+
+class DriverOut(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    full_name: str
+    gender: str
+    date_of_birth: date
+    ghana_card_number: str
+    ghana_card_front_id: str
+    ghana_card_back_id: str
+    licence_number: str
+    licence_class: str
+    licence_expiry: date
+    licence_photo_id: str
+    emergency_contact_name: str
+    emergency_contact_phone: str
+    status: str
+    availability: str
+    review_remark: str
+
+
+class AvailabilityIn(BaseModel):
+    availability: Literal["accepting", "paused"]
