@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -200,3 +200,28 @@ class Route(Base):
     review_remark: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+TRIP_SCHEDULED = "scheduled"
+TRIP_CANCELLED = "cancelled"
+
+
+class Trip(Base):
+    """One dated departure of a Route, with its own capacity ledger (PRD §8.4)."""
+
+    __tablename__ = "lg_trip"
+    __table_args__ = (UniqueConstraint("route_id", "depart_date", name="uq_trip_route_date"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    route_id: Mapped[int] = mapped_column(ForeignKey("lg_route.id"), index=True)
+    vehicle_id: Mapped[int] = mapped_column(ForeignKey("lg_vehicle.id"))
+    depart_date: Mapped[date] = mapped_column(Date, index=True)
+    depart_time: Mapped[str] = mapped_column(String(5))
+    status: Mapped[str] = mapped_column(String(20), default=TRIP_SCHEDULED)
+    total_load_kg: Mapped[float] = mapped_column(Float)
+    total_volume_m3: Mapped[float] = mapped_column(Float)
+    used_load_kg: Mapped[float] = mapped_column(Float, default=0.0)  # order reservations
+    used_volume_m3: Mapped[float] = mapped_column(Float, default=0.0)
+    manual_load_kg: Mapped[float] = mapped_column(Float, default=0.0)  # off-platform cargo
+    manual_volume_m3: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
