@@ -38,7 +38,8 @@ app.include_router(admin_config.router, prefix="/api/admin/config", tags=["admin
 app.include_router(admin_crawl.router, prefix="/api/admin", tags=["admin"])
 
 from app.logistics.api import (
-    h5_auth, h5_driver, h5_notifications, h5_routes, h5_trips, h5_uploads, h5_vehicles,
+    h5_auth, h5_driver, h5_notifications, h5_orders, h5_routes, h5_trips,
+    h5_uploads, h5_vehicles,
 )
 from app.logistics.api.admin import blacklist as lg_admin_blacklist
 from app.logistics.api.admin import drivers as lg_admin_drivers
@@ -52,6 +53,7 @@ app.include_router(h5_driver.router, prefix="/api/lg/driver", tags=["lg-h5"])
 app.include_router(h5_vehicles.router, prefix="/api/lg/vehicles", tags=["lg-h5"])
 app.include_router(h5_routes.router, prefix="/api/lg/routes", tags=["lg-h5"])
 app.include_router(h5_trips.router, prefix="/api/lg/trips", tags=["lg-h5"])
+app.include_router(h5_orders.router, prefix="/api/lg/orders", tags=["lg-h5"])
 app.include_router(h5_notifications.router, prefix="/api/lg/notifications", tags=["lg-h5"])
 app.include_router(lg_admin_staff.router, prefix="/api/admin/lg/staff", tags=["lg-admin"])
 app.include_router(lg_admin_drivers.router, prefix="/api/admin/lg/drivers", tags=["lg-admin"])

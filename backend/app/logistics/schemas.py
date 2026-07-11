@@ -251,3 +251,46 @@ class TripOut(BaseModel):
     used_volume_m3: float
     manual_load_kg: float
     manual_volume_m3: float
+
+
+class OrderIn(BaseModel):
+    trip_id: int
+    contact_name: str
+    contact_phone: str
+    pickup_region: str
+    pickup_town: str
+    pickup_details: str
+    delivery_region: str
+    delivery_town: str
+    delivery_details: str
+    consignee_name: str
+    consignee_phone: str
+    cargo_name: str
+    cargo_category: str
+    packaging: Literal["carton", "pallet", "bag", "drum", "loose", "other"]
+    pieces: int
+    weight_kg: float
+    volume_m3: float
+    fragile: bool = False
+    needs_loading: bool = False
+    needs_pickup: bool = False
+    pickup_window: str
+    remarks: str = ""
+    photo_ids: list[str] = []
+
+    @field_validator("contact_phone", "consignee_phone")
+    @classmethod
+    def _phones(cls, v: str) -> str:
+        return normalize_phone(v)
+
+    @model_validator(mode="after")
+    def _positive(self):
+        if self.pieces <= 0 or self.weight_kg <= 0 or self.volume_m3 <= 0:
+            raise ValueError("pieces, weight and volume must be positive")
+        if len(self.photo_ids) > 6:
+            raise ValueError("at most 6 photos")
+        return self
+
+
+class CancelIn(BaseModel):
+    reason: str
