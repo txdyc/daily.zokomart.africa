@@ -48,6 +48,7 @@ from app.logistics.api.admin import drivers as lg_admin_drivers
 from app.logistics.api.admin import orders as lg_admin_orders
 from app.logistics.api.admin import routes as lg_admin_routes
 from app.logistics.api.admin import staff as lg_admin_staff
+from app.logistics.api.admin import stats as lg_admin_stats
 from app.logistics.api.admin import vehicles as lg_admin_vehicles
 
 app.include_router(h5_auth.router, prefix="/api/lg/auth", tags=["lg-h5"])
@@ -68,6 +69,7 @@ app.include_router(lg_admin_orders.router, prefix="/api/admin/lg/orders", tags=[
 app.include_router(lg_admin_commissions.router,
                    prefix="/api/admin/lg/commissions", tags=["lg-admin"])
 app.include_router(lg_admin_config.router, prefix="/api/admin/lg/config", tags=["lg-admin"])
+app.include_router(lg_admin_stats.router, prefix="/api/admin/lg/stats", tags=["lg-admin"])
 
 
 @app.get("/api/health")
