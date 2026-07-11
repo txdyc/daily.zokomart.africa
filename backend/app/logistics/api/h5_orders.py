@@ -27,6 +27,7 @@ from app.logistics.models import (
 )
 from app.logistics.orders import RESERVED_STATUSES, transition
 from app.logistics.schemas import CancelIn, OrderIn
+from app.logistics.notify import notify
 
 router = APIRouter()
 
@@ -109,6 +110,112 @@ def my_orders(
              .offset((page - 1) * page_size).limit(page_size).all())
     return {"items": [order_out(db, o, "shipper") for o in rows],
             "total": total, "page": page, "page_size": page_size}
+
+
+def _my_driver_order(db: Session, user: UserAccount, order_id: int) -> CustomerOrder:
+    order = db.get(CustomerOrder, order_id)
+    driver = db.query(Driver).filter_by(user_id=user.id).one_or_none()
+    if order is None or driver is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    trip = db.get(Trip, order.trip_id)
+    route = db.get(Route, trip.route_id)
+    if route.driver_id != driver.id:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
+
+
+def _shipper_user(db: Session, order: CustomerOrder) -> UserAccount:
+    return db.get(UserAccount, order.shipper_user_id)
+
+
+@router.get("/assigned")
+def assigned_orders(
+    status: str | None = None,
+    page: int = 1,
+    page_size: int = 20,
+    user: UserAccount = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    driver = db.query(Driver).filter_by(user_id=user.id).one_or_none()
+    if driver is None:
+        return {"items": [], "total": 0, "page": page, "page_size": page_size}
+    q = (db.query(CustomerOrder)
+         .join(Trip, CustomerOrder.trip_id == Trip.id)
+         .join(Route, Trip.route_id == Route.id)
+         .filter(Route.driver_id == driver.id))
+    if status:
+        q = q.filter(CustomerOrder.status == status)
+    total = q.count()
+    rows = (q.order_by(CustomerOrder.id.desc())
+             .offset((page - 1) * page_size).limit(page_size).all())
+    return {"items": [order_out(db, o, "driver") for o in rows],
+            "total": total, "page": page, "page_size": page_size}
+
+
+@router.post("/{order_id}/accept")
+def accept_order(
+    order_id: int,
+    user: UserAccount = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    order = _my_driver_order(db, user, order_id)
+    if order.status != ORDER_PRICE_CONFIRMED:
+        raise HTTPException(status_code=409, detail=f"Order is {order.status}")
+    transition(db, order, ORDER_AWAITING_PICKUP, actor=user.phone, actor_type="driver")
+    db.commit()
+    notify(db, _shipper_user(db, order), "order_accepted", "Driver accepted your order",
+           f"Order #{order.id} will be picked up: {order.pickup_time}.", sms=True)
+    return order_out(db, order, "driver")
+
+
+@router.post("/{order_id}/reject")
+def reject_order(
+    order_id: int,
+    body: CancelIn,
+    user: UserAccount = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    order = _my_driver_order(db, user, order_id)
+    if order.status != ORDER_PRICE_CONFIRMED:
+        raise HTTPException(status_code=409, detail=f"Order is {order.status}")
+    release(db, order.trip_id, order.weight_kg, order.volume_m3)
+    order.reject_count += 1
+    transition(db, order, ORDER_SUBMITTED, actor=user.phone, actor_type="driver",
+               detail=body.reason)
+    db.commit()
+    return order_out(db, order, "driver")
+
+
+@router.post("/{order_id}/depart")
+def depart(
+    order_id: int,
+    user: UserAccount = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    order = _my_driver_order(db, user, order_id)
+    if order.status != ORDER_AWAITING_PICKUP:
+        raise HTTPException(status_code=409, detail=f"Order is {order.status}")
+    transition(db, order, ORDER_IN_TRANSIT, actor=user.phone, actor_type="driver")
+    db.commit()
+    notify(db, _shipper_user(db, order), "order", "Your cargo is in transit",
+           f"Order #{order.id} departed.")
+    return order_out(db, order, "driver")
+
+
+@router.post("/{order_id}/deliver")
+def deliver(
+    order_id: int,
+    user: UserAccount = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    order = _my_driver_order(db, user, order_id)
+    if order.status != ORDER_IN_TRANSIT:
+        raise HTTPException(status_code=409, detail=f"Order is {order.status}")
+    transition(db, order, ORDER_DELIVERED, actor=user.phone, actor_type="driver")
+    db.commit()
+    notify(db, _shipper_user(db, order), "order", "Cargo delivered",
+           f"Order #{order.id} was delivered. Customer service will confirm completion.")
+    return order_out(db, order, "driver")
 
 
 def _visible_order(db: Session, user: UserAccount, order_id: int) -> tuple[CustomerOrder, str]:
