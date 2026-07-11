@@ -52,6 +52,8 @@ CONFIG_DEFAULTS = {
     "lg_sms_provider": "mock",
     "lg_sms_api_key": "",
     "lg_sms_sender_id": "ZokoDaily",
+    "lg_commission_rate": "0.08",
+    "lg_payment_instructions": "",
 }
 
 DEFAULT_ADMIN = ("admin", "admin123")  # change the password after first login
