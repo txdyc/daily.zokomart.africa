@@ -154,3 +154,16 @@ class VehicleOut(VehicleIn):
     driver_id: int
     status: str
     review_remark: str
+
+
+class BlacklistIn(BaseModel):
+    value_type: Literal["phone", "ghana_card", "plate"]
+    value: str
+    reason: str = ""
+
+
+class BlacklistOut(BlacklistIn):
+    model_config = {"from_attributes": True}
+
+    id: int
+    created_by: str
