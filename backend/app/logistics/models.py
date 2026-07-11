@@ -113,3 +113,15 @@ class Blacklist(Base):
     reason: Mapped[str] = mapped_column(Text, default="")
     created_by: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class Notification(Base):
+    __tablename__ = "lg_notification"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("lg_user_account.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(30))  # driver_review / vehicle_review / order / expiry
+    title: Mapped[str] = mapped_column(String(200))
+    body: Mapped[str] = mapped_column(Text, default="")
+    read_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

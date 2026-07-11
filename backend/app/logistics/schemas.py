@@ -93,3 +93,24 @@ class DriverOut(BaseModel):
 
 class AvailabilityIn(BaseModel):
     availability: Literal["accepting", "paused"]
+
+
+class ReviewIn(BaseModel):
+    action: Literal["approve", "reject"]
+    reason: str = ""
+
+
+class FreezeIn(BaseModel):
+    reason: str
+
+
+class DriverAdminOut(DriverOut):
+    user_id: int
+    phone: str = ""  # filled by the endpoint
+
+
+class Paginated(BaseModel):
+    items: list
+    total: int
+    page: int
+    page_size: int
