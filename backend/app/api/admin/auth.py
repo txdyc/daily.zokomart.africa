@@ -18,5 +18,6 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
 
 
 @router.get("/me")
-def me(username: str = Depends(get_current_admin)):
-    return {"username": username}
+def me(username: str = Depends(get_current_admin), db: Session = Depends(get_db)):
+    user = db.query(AdminUser).filter_by(username=username).one_or_none()
+    return {"username": username, "role": user.role if user else "admin"}

@@ -39,4 +39,15 @@ def test_me_requires_token(client, db_session):
     token = _login(client).json()["access_token"]
     r = client.get("/api/admin/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200
-    assert r.json() == {"username": "admin"}
+    assert r.json() == {"username": "admin", "role": "admin"}
+
+
+def test_me_returns_staff_role(client, db_session):
+    db_session.add(AdminUser(
+        username="cs1", password_hash=hash_password("pw"), role="cs",
+    ))
+    db_session.commit()
+    token = _login(client, username="cs1", password="pw").json()["access_token"]
+    r = client.get("/api/admin/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200
+    assert r.json() == {"username": "cs1", "role": "cs"}
