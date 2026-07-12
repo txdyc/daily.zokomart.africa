@@ -25,6 +25,9 @@ services:
       DATABASE_URL: mysql+pymysql://zokodaily:${MYSQL_PASSWORD}@mysql:3306/zokodaily?charset=utf8mb4
       JWT_SECRET: ${JWT_SECRET}
       SCHEDULER_ENABLED: "true"
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads-data:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -52,3 +55,4 @@ services:
 
 volumes:
   mysql-data:
+  uploads-data:

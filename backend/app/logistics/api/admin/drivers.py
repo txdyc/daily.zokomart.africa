@@ -44,6 +44,8 @@ def list_drivers(
     _: AdminUser = Depends(reviewer),
     db: Session = Depends(get_db),
 ):
+    page = max(1, page)
+    page_size = max(1, min(page_size, 100))
     q = db.query(Driver)
     if status:
         q = q.filter(Driver.status == status)

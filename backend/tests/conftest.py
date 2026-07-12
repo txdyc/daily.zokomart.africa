@@ -29,6 +29,27 @@ def db_session():
     session.close()
 
 
+@pytest.fixture(autouse=True)
+def _reset_login_rate_limiter():
+    """Clear the in-memory login rate limiter before and after each test.
+
+    All TestClient requests come from the same IP ("testclient"). Tests call
+    the login endpoint repeatedly via admin_headers(), which would otherwise
+    exceed the 10-attempt/60s limit and cause spurious 429 failures.
+    """
+    try:
+        from app.api.admin.auth import _LOGIN_ATTEMPTS
+        _LOGIN_ATTEMPTS.clear()
+    except ImportError:
+        pass
+    yield
+    try:
+        from app.api.admin.auth import _LOGIN_ATTEMPTS
+        _LOGIN_ATTEMPTS.clear()
+    except ImportError:
+        pass
+
+
 @pytest.fixture()
 def client(db_session):
     def override_get_db():

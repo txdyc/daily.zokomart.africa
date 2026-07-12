@@ -20,7 +20,13 @@ cs_staff = require_roles("admin", "cs")
 
 
 def _get(db: Session, commission_id: int) -> CommissionRecord:
-    rec = db.get(CommissionRecord, commission_id)
+    """Get a commission record with a row-level lock to prevent concurrent settlement."""
+    rec = (
+        db.query(CommissionRecord)
+        .filter_by(id=commission_id)
+        .with_for_update()
+        .one_or_none()
+    )
     if rec is None:
         raise HTTPException(status_code=404, detail="Commission record not found")
     return rec
@@ -35,6 +41,8 @@ def list_commissions(
     _: AdminUser = Depends(cs_staff),
     db: Session = Depends(get_db),
 ):
+    page = max(1, page)
+    page_size = max(1, min(page_size, 100))
     q = db.query(CommissionRecord)
     if status:
         q = q.filter(CommissionRecord.status == status)

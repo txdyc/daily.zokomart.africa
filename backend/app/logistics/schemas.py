@@ -31,6 +31,23 @@ class StaffIn(BaseModel):
     password: str
     role: Literal["admin", "auditor", "cs"]
 
+    @field_validator("password")
+    @classmethod
+    def _password_strength(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not any(c.isalpha() for c in v) or not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain both letters and digits")
+        return v
+
+    @field_validator("username")
+    @classmethod
+    def _username(cls, v: str) -> str:
+        v = v.strip()
+        if len(v) < 3:
+            raise ValueError("Username must be at least 3 characters")
+        return v
+
 
 class StaffOut(BaseModel):
     id: int

@@ -4,11 +4,21 @@ import { api } from "./client";
 import type {
   AiConfig,
   ArticleAdmin,
+  BlacklistEntry,
   Country,
   CrawlRun,
+  LgCommission,
+  LgConfig,
+  LgDriver,
+  LgOrder,
+  LgOrderRemark,
+  LgRoute,
+  LgVehicle,
   Paginated,
   Site,
   SiteIn,
+  Staff,
+  StatsOverview,
 } from "./types";
 
 export async function login(username: string, password: string) {
@@ -103,4 +113,161 @@ export interface TestTranslationResult {
 }
 export async function testTranslation(): Promise<TestTranslationResult> {
   return (await api.post<TestTranslationResult>("/config/test-translation")).data;
+}
+
+// ── Logistics admin endpoints (Plan 5) ──
+
+export async function me(): Promise<{ username: string; role: string }> {
+  return (await api.get<{ username: string; role: string }>("/auth/me")).data;
+}
+
+export async function lgStats(params?: {
+  start?: string;
+  end?: string;
+}): Promise<StatsOverview> {
+  return (await api.get<StatsOverview>("/lg/stats/overview", { params })).data;
+}
+
+export interface LgListParams {
+  status?: string;
+  page?: number;
+  page_size?: number;
+}
+
+export async function lgDrivers(params: LgListParams): Promise<Paginated<LgDriver>> {
+  return (await api.get<Paginated<LgDriver>>("/lg/drivers", { params })).data;
+}
+export async function lgDriver(id: number): Promise<LgDriver> {
+  return (await api.get<LgDriver>(`/lg/drivers/${id}`)).data;
+}
+export async function lgReviewDriver(
+  id: number,
+  action: "approve" | "reject",
+  reason: string,
+): Promise<LgDriver> {
+  return (await api.post<LgDriver>(`/lg/drivers/${id}/review`, { action, reason })).data;
+}
+export async function lgFreezeDriver(id: number, reason: string): Promise<LgDriver> {
+  return (await api.post<LgDriver>(`/lg/drivers/${id}/freeze`, { reason })).data;
+}
+export async function lgUnfreezeDriver(id: number): Promise<LgDriver> {
+  return (await api.post<LgDriver>(`/lg/drivers/${id}/unfreeze`)).data;
+}
+
+export async function lgVehicles(params: LgListParams): Promise<Paginated<LgVehicle>> {
+  return (await api.get<Paginated<LgVehicle>>("/lg/vehicles", { params })).data;
+}
+export async function lgReviewVehicle(
+  id: number,
+  action: "approve" | "reject",
+  reason: string,
+): Promise<LgVehicle> {
+  return (await api.post<LgVehicle>(`/lg/vehicles/${id}/review`, { action, reason })).data;
+}
+
+export async function lgRoutes(params: LgListParams): Promise<Paginated<LgRoute>> {
+  return (await api.get<Paginated<LgRoute>>("/lg/routes", { params })).data;
+}
+export async function lgReviewRoute(
+  id: number,
+  action: "approve" | "reject",
+  reason: string,
+): Promise<LgRoute> {
+  return (await api.post<LgRoute>(`/lg/routes/${id}/review`, { action, reason })).data;
+}
+export async function lgSuspendRoute(id: number, reason: string): Promise<LgRoute> {
+  return (await api.post<LgRoute>(`/lg/routes/${id}/suspend`, { reason })).data;
+}
+export async function lgResumeRoute(id: number): Promise<LgRoute> {
+  return (await api.post<LgRoute>(`/lg/routes/${id}/resume`)).data;
+}
+
+export async function lgOrders(params: LgListParams): Promise<Paginated<LgOrder>> {
+  return (await api.get<Paginated<LgOrder>>("/lg/orders", { params })).data;
+}
+// Detail endpoint returns `remarks` (shipper's note string) and
+// `remarks_timeline` (CS remarks array) as separate fields.
+export async function lgOrder(id: number): Promise<LgOrder> {
+  return (
+    await api.get<LgOrder & { remarks_timeline: LgOrderRemark[]; reject_count: number }>(
+      `/lg/orders/${id}`,
+    )
+  ).data;
+}
+export async function lgConfirmPrice(
+  id: number,
+  body: {
+    freight_ghs: number;
+    pickup_time: string;
+    commission_ghs?: number | null;
+    override_reason?: string;
+  },
+): Promise<LgOrder> {
+  return (await api.post<LgOrder>(`/lg/orders/${id}/confirm-price`, body)).data;
+}
+export async function lgReassign(id: number, tripId: number): Promise<LgOrder> {
+  return (await api.post<LgOrder>(`/lg/orders/${id}/reassign`, { trip_id: tripId })).data;
+}
+export async function lgCancelOrder(id: number, reason: string): Promise<LgOrder> {
+  return (await api.post<LgOrder>(`/lg/orders/${id}/cancel`, { reason })).data;
+}
+export async function lgExceptionClose(id: number, reason: string): Promise<LgOrder> {
+  return (await api.post<LgOrder>(`/lg/orders/${id}/exception-close`, { reason })).data;
+}
+export async function lgCompleteOrder(id: number): Promise<LgOrder> {
+  return (await api.post<LgOrder>(`/lg/orders/${id}/complete`)).data;
+}
+export async function lgAddRemark(id: number, body: string): Promise<{ ok: boolean }> {
+  return (await api.post<{ ok: boolean }>(`/lg/orders/${id}/remarks`, { body })).data;
+}
+
+export async function lgCommissions(params: {
+  status?: string;
+  driver_id?: number;
+  page?: number;
+  page_size?: number;
+}): Promise<Paginated<LgCommission>> {
+  return (await api.get<Paginated<LgCommission>>("/lg/commissions", { params })).data;
+}
+export async function lgSettleCommission(
+  id: number,
+  method: string,
+  reference: string,
+): Promise<LgCommission> {
+  return (await api.post<LgCommission>(`/lg/commissions/${id}/settle`, { method, reference })).data;
+}
+export async function lgWaiveCommission(id: number, reason: string): Promise<LgCommission> {
+  return (await api.post<LgCommission>(`/lg/commissions/${id}/waive`, { reason })).data;
+}
+
+export async function lgConfig(): Promise<LgConfig> {
+  return (await api.get<LgConfig>("/lg/config")).data;
+}
+export async function lgUpdateConfig(body: Partial<Record<keyof LgConfig, string>>): Promise<{ ok: boolean }> {
+  return (await api.put<{ ok: boolean }>("/lg/config", body)).data;
+}
+
+export async function lgStaff(): Promise<Staff[]> {
+  return (await api.get<Staff[]>("/lg/staff")).data;
+}
+export async function lgCreateStaff(body: {
+  username: string;
+  password: string;
+  role: string;
+}): Promise<Staff> {
+  return (await api.post<Staff>("/lg/staff", body)).data;
+}
+
+export async function lgBlacklist(): Promise<BlacklistEntry[]> {
+  return (await api.get<BlacklistEntry[]>("/lg/blacklist")).data;
+}
+export async function lgAddBlacklist(body: {
+  value_type: string;
+  value: string;
+  reason: string;
+}): Promise<BlacklistEntry> {
+  return (await api.post<BlacklistEntry>("/lg/blacklist", body)).data;
+}
+export async function lgDeleteBlacklist(id: number): Promise<{ ok: boolean }> {
+  return (await api.delete<{ ok: boolean }>(`/lg/blacklist/${id}`)).data;
 }

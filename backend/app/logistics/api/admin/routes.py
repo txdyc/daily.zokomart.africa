@@ -45,6 +45,8 @@ def list_routes(
     _: AdminUser = Depends(reviewer),
     db: Session = Depends(get_db),
 ):
+    page = max(1, page)
+    page_size = max(1, min(page_size, 100))
     q = db.query(Route)
     if status:
         q = q.filter(Route.status == status)
