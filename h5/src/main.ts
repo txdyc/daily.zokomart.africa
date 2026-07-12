@@ -6,10 +6,11 @@ import "vant/lib/index.css";
 import App from "./App.vue";
 import { i18n } from "./i18n";
 import { router } from "./router";
+import { useAuthStore } from "./stores/auth";
 import "./styles/tokens.css";
 import "./styles/base.css";
 
-createApp(App)
+const app = createApp(App)
   .use(createPinia())
   .use(router)
   .use(i18n)
@@ -17,5 +18,14 @@ createApp(App)
   .use(SwipeItem)
   .use(PullRefresh)
   .use(List)
-  .use(Popup)
-  .mount("#app");
+  .use(Popup);
+
+// A 401 from any /api/lg call clears the session and bounces to login.
+window.addEventListener("lg-unauthorized", () => {
+  useAuthStore().signOut();
+  if (router.currentRoute.value.meta.requiresAuth) {
+    router.replace({ name: "login", query: { redirect: router.currentRoute.value.fullPath } });
+  }
+});
+
+app.mount("#app");
