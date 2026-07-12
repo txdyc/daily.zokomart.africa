@@ -162,10 +162,7 @@ const current = ref<LgDriver | null>(null);
 const reason = ref("");
 const action = ref<"approve" | "reject">("approve");
 
-const canReview = computed(() => {
-  const s = current.value?.status;
-  return s === "pending_review" || s === "rejected";
-});
+const canReview = computed(() => current.value?.status === "pending_review");
 
 function statusLabel(v: string): string {
   return LG_DRIVER_STATUSES.find((d) => d.value === v)?.label ?? v;

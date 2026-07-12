@@ -1,12 +1,16 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.logistics.auth import require_roles
+from app.logistics.ops import log_op
 from app.models import AdminUser
 from app.services.config_service import get_config, mask_secret, set_config
 
 router = APIRouter(dependencies=[Depends(require_roles("admin"))])
+logger = logging.getLogger(__name__)
 
 DEFAULTS = {
     "lg_commission_rate": "0.08",
@@ -28,7 +32,11 @@ def get_lg_config(db: Session = Depends(get_db)):
 
 
 @router.put("")
-def put_lg_config(body: dict[str, str], db: Session = Depends(get_db)):
+def put_lg_config(
+    body: dict[str, str],
+    staff: AdminUser = Depends(require_roles("admin")),
+    db: Session = Depends(get_db),
+):
     unknown = set(body) - set(DEFAULTS)
     if unknown:
         raise HTTPException(status_code=400, detail=f"Unknown keys: {sorted(unknown)}")
@@ -43,5 +51,8 @@ def put_lg_config(body: dict[str, str], db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Provider must be mock or arkesel")
     for key, value in body.items():
         set_config(db, key, value)
+        # Audit log: record who changed what config key
+        log_op(db, staff.username, "staff", "config_update", "config", 0,
+               f"{key}={value if key != 'lg_sms_api_key' else '***'}")
     db.commit()
     return {"ok": True}

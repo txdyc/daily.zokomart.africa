@@ -74,8 +74,10 @@ router.beforeEach((to) => {
   const roles = to.meta?.roles as string[] | undefined;
   if (roles && roles.length > 0) {
     const role = localStorage.getItem("zoko-admin-role") ?? "";
-    if (!roles.includes(role)) {
-      return { name: "lg-dashboard" };
+    // If role is empty or insufficient, fall back to articles (no role restriction)
+    // to avoid an infinite redirect loop when role is missing.
+    if (!role || !roles.includes(role)) {
+      return { name: "articles" };
     }
   }
 });

@@ -102,6 +102,9 @@
         <el-descriptions-item label="取货时间">{{ current.pickup_time || "—" }}</el-descriptions-item>
         <el-descriptions-item label="Trip ID">{{ current.trip_id }}</el-descriptions-item>
         <el-descriptions-item label="创建时间" :span="2">{{ formatTime(current.created_at) }}</el-descriptions-item>
+        <el-descriptions-item v-if="current.remarks" label="货主备注" :span="2">
+          {{ current.remarks }}
+        </el-descriptions-item>
         <el-descriptions-item v-if="current.cancel_reason" label="取消/关闭原因" :span="2">
           {{ current.cancel_reason }}
         </el-descriptions-item>
@@ -325,7 +328,8 @@ const canConfirmPrice = computed(() => {
 });
 const canCancel = computed(() => {
   const s = current.value?.status;
-  return s && !["completed", "cancelled", "exception_closed"].includes(s);
+  // Backend ALLOWED map: only submitted/price_confirmed/awaiting_pickup can transition to cancelled
+  return s === "submitted" || s === "price_confirmed" || s === "awaiting_pickup";
 });
 const canClose = computed(() => {
   const s = current.value?.status;

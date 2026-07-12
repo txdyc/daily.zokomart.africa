@@ -47,6 +47,19 @@ def _get_order(db: Session, order_id: int) -> CustomerOrder:
     return order
 
 
+def _get_order_for_update(db: Session, order_id: int) -> CustomerOrder:
+    """Get an order with a row-level lock to prevent concurrent modifications."""
+    order = (
+        db.query(CustomerOrder)
+        .filter_by(id=order_id)
+        .with_for_update()
+        .one_or_none()
+    )
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
+
+
 def _driver_user(db: Session, order: CustomerOrder) -> tuple[Driver, UserAccount]:
     trip = db.get(Trip, order.trip_id)
     route = db.get(Route, trip.route_id)
@@ -62,6 +75,8 @@ def list_orders(
     _: AdminUser = Depends(cs_staff),
     db: Session = Depends(get_db),
 ):
+    page = max(1, page)
+    page_size = max(1, min(page_size, 100))
     q = db.query(CustomerOrder)
     if status:
         q = q.filter(CustomerOrder.status == status)
@@ -80,7 +95,9 @@ def order_detail(
 ):
     order = _get_order(db, order_id)
     data = order_out(db, order, "staff")
-    data["remarks"] = [
+    # Use a separate field for the CS remarks timeline so the shipper's
+    # original `remarks` string is preserved in the detail response.
+    data["remarks_timeline"] = [
         {"author": r.author, "body": r.body, "created_at": r.created_at.isoformat()}
         for r in db.query(CsRemark).filter_by(order_id=order.id).order_by(CsRemark.id)
     ]
@@ -95,7 +112,7 @@ def confirm_price(
     staff: AdminUser = Depends(cs_staff),
     db: Session = Depends(get_db),
 ):
-    order = _get_order(db, order_id)
+    order = _get_order_for_update(db, order_id)
     if order.status not in (ORDER_SUBMITTED, ORDER_PRICE_CONFIRMED):
         raise HTTPException(status_code=409, detail=f"Order is {order.status}")
     if body.commission_ghs is not None and not body.override_reason.strip():
@@ -213,7 +230,7 @@ def complete_order(
     staff: AdminUser = Depends(cs_staff),
     db: Session = Depends(get_db),
 ):
-    order = _get_order(db, order_id)
+    order = _get_order_for_update(db, order_id)
     if order.status != ORDER_DELIVERED:
         raise HTTPException(status_code=409, detail=f"Order is {order.status}")
     driver, driver_user = _driver_user(db, order)

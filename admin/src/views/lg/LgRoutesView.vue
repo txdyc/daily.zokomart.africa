@@ -176,10 +176,7 @@ const current = ref<LgRoute | null>(null);
 const reason = ref("");
 const action = ref<"approve" | "reject">("approve");
 
-const canReview = computed(() => {
-  const s = current.value?.status;
-  return s === "pending_review" || s === "rejected";
-});
+const canReview = computed(() => current.value?.status === "pending_review");
 
 function statusLabel(v: string): string {
   return LG_ROUTE_STATUSES.find((d) => d.value === v)?.label ?? v;

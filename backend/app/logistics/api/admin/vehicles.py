@@ -28,6 +28,8 @@ def list_vehicles(
     _: AdminUser = Depends(reviewer),
     db: Session = Depends(get_db),
 ):
+    page = max(1, page)
+    page_size = max(1, min(page_size, 100))
     q = db.query(Vehicle)
     if status:
         q = q.filter(Vehicle.status == status)

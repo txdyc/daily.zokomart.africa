@@ -185,16 +185,14 @@ export async function lgResumeRoute(id: number): Promise<LgRoute> {
 export async function lgOrders(params: LgListParams): Promise<Paginated<LgOrder>> {
   return (await api.get<Paginated<LgOrder>>("/lg/orders", { params })).data;
 }
-// Detail endpoint overwrites the shipper's `remarks` string with the CS
-// timeline array; we reshape it to `remarks_timeline` for clean typing.
+// Detail endpoint returns `remarks` (shipper's note string) and
+// `remarks_timeline` (CS remarks array) as separate fields.
 export async function lgOrder(id: number): Promise<LgOrder> {
-  const raw = (
-    await api.get<LgOrder & { remarks: LgOrderRemark[] | string; reject_count: number }>(
+  return (
+    await api.get<LgOrder & { remarks_timeline: LgOrderRemark[]; reject_count: number }>(
       `/lg/orders/${id}`,
     )
   ).data;
-  const timeline = Array.isArray(raw.remarks) ? raw.remarks : [];
-  return { ...raw, remarks: "", remarks_timeline: timeline, reject_count: raw.reject_count };
 }
 export async function lgConfirmPrice(
   id: number,

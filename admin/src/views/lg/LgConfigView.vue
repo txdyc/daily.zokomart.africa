@@ -3,7 +3,14 @@
     <template #header>物流设置</template>
     <el-form label-width="130px" class="form">
       <el-form-item label="佣金费率">
-        <el-input v-model="form.lg_commission_rate" placeholder="0.08" />
+        <el-input-number
+          v-model="commissionRateNum"
+          :min="0"
+          :max="0.5"
+          :step="0.01"
+          :precision="2"
+          @change="onRateChange"
+        />
         <div class="muted">范围 0 – 0.5（即 0% – 50%）</div>
       </el-form-item>
       <el-form-item label="支付说明">
@@ -49,9 +56,10 @@ import { lgConfig, lgUpdateConfig } from "../../api/endpoints";
 const loading = ref(false);
 const saving = ref(false);
 const maskedApiKey = ref("");
+const commissionRateNum = ref(0.08);
 
 const form = reactive({
-  lg_commission_rate: "",
+  lg_commission_rate: "0.08",
   lg_payment_instructions: "",
   lg_sms_provider: "mock",
   lg_sms_sender_id: "",
@@ -62,6 +70,10 @@ const maskedPlaceholder = computed(() =>
   maskedApiKey.value ? `当前：${maskedApiKey.value}` : "尚未配置",
 );
 
+function onRateChange(val: number | undefined) {
+  form.lg_commission_rate = val !== undefined ? String(val) : "0.08";
+}
+
 onMounted(load);
 
 async function load() {
@@ -69,6 +81,7 @@ async function load() {
   try {
     const cfg = await lgConfig();
     form.lg_commission_rate = cfg.lg_commission_rate;
+    commissionRateNum.value = parseFloat(cfg.lg_commission_rate) || 0.08;
     form.lg_payment_instructions = cfg.lg_payment_instructions;
     form.lg_sms_provider = cfg.lg_sms_provider;
     form.lg_sms_sender_id = cfg.lg_sms_sender_id;

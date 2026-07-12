@@ -155,10 +155,7 @@ const docs = [
   { key: "insurance", label: "保险单", id: (v: LgVehicle) => v.insurance_cert_id },
 ];
 
-const canReview = computed(() => {
-  const s = current.value?.status;
-  return s === "pending_review" || s === "rejected";
-});
+const canReview = computed(() => current.value?.status === "pending_review");
 
 function statusLabel(v: string): string {
   return LG_VEHICLE_STATUSES.find((d) => d.value === v)?.label ?? v;
