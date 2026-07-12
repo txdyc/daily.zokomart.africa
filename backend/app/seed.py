@@ -103,8 +103,12 @@ if __name__ == "__main__":
     import app.models  # noqa: F401
 
     from app.db import Base, SessionLocal, engine
+    from app.migrate import ensure_schema
 
     Base.metadata.create_all(engine)
+    applied = ensure_schema(engine)
+    if applied:
+        print(f"Applied schema migrations: {applied}")
     with SessionLocal() as session:
         seed_all(session)
     print("Seed complete.")
