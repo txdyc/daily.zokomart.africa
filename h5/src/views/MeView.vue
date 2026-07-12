@@ -1,13 +1,26 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
+import { listNotifications } from "../api/lg";
 import TabBar from "../components/TabBar.vue";
 import { useAuthStore } from "../stores/auth";
 
 const { t } = useI18n();
 const auth = useAuthStore();
 const router = useRouter();
+
+const unread = ref(0);
+onMounted(async () => {
+  if (auth.loggedIn) {
+    try {
+      unread.value = (await listNotifications(1)).unread;
+    } catch {
+      unread.value = 0;
+    }
+  }
+});
 
 function signOut() {
   auth.signOut();
@@ -28,7 +41,10 @@ function signOut() {
 
     <nav v-else class="menu">
       <RouterLink class="row" to="/me/orders">{{ t("lg.me.myOrders") }}</RouterLink>
-      <RouterLink class="row" to="/me/notifications">{{ t("lg.me.notifications") }}</RouterLink>
+      <RouterLink class="row" to="/me/notifications">
+        {{ t("lg.me.notifications") }}
+        <span v-if="unread" class="badge">{{ unread }}</span>
+      </RouterLink>
       <button class="row sign-out" @click="signOut">{{ t("lg.me.signOut") }}</button>
     </nav>
 
@@ -47,6 +63,8 @@ function signOut() {
 .row {
   display: block; width: 100%; text-align: left; padding: 15px 18px; font-size: 15px;
   color: var(--text-primary); text-decoration: none; border: 0; border-bottom: 1px solid var(--border); background: var(--bg);
+  position: relative;
 }
+.badge { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: var(--brand-500); color: #fff; font-size: 11px; min-width: 18px; height: 18px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
 .sign-out { color: #c0392b; }
 </style>

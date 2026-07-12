@@ -29,7 +29,7 @@ async function mountDetail() {
 }
 
 describe("OrderDetailView", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("hides driver contact before acceptance", async () => {
     mocks.orderDetail.mockResolvedValueOnce(order({ status: "submitted", driver: null }));

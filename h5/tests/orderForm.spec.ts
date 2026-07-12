@@ -34,7 +34,7 @@ function fill(w: Awaited<ReturnType<typeof mountForm>>["w"]) {
 }
 
 describe("OrderFormView", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("blocks submission until required fields are filled", async () => {
     const { w } = await mountForm();

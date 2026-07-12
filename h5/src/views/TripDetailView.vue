@@ -15,7 +15,7 @@ const error = ref("");
 
 onMounted(async () => {
   try {
-    const routeId = typeof route.query.route === "string" ? route.query.route : route.params.id;
+    const routeId = typeof route.query.route === "string" ? route.query.route : String(route.params.id);
     detail.value = await routeDetail(routeId);
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
