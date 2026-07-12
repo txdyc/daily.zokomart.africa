@@ -7,6 +7,7 @@ import type { ArticleCard } from "../api/types";
 import AppHeader from "../components/AppHeader.vue";
 import BannerCarousel from "../components/BannerCarousel.vue";
 import NewsGrid from "../components/NewsGrid.vue";
+import TabBar from "../components/TabBar.vue";
 import { useFeedStore } from "../stores/feed";
 
 const { t } = useI18n();
@@ -68,6 +69,7 @@ onMounted(() => {
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
       <NewsGrid />
     </van-pull-refresh>
+    <TabBar />
   </div>
 </template>
 
@@ -75,6 +77,7 @@ onMounted(() => {
 .home {
   min-height: 100vh;
   background: var(--surface);
+  padding-bottom: 64px;
 }
 .country-tabs {
   display: flex;
