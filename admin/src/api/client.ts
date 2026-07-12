@@ -3,6 +3,7 @@ import { ElMessage } from "element-plus";
 
 export const TOKEN_KEY = "zoko-admin-token";
 export const USER_KEY = "zoko-admin-user";
+export const ROLE_KEY = "zoko-admin-role";
 
 export const api = axios.create({ baseURL: "/api/admin" });
 
@@ -28,6 +29,7 @@ export function handleApiError(
   if (status === 401) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(ROLE_KEY);
     redirect();
   } else if (status === 409 || status === 422) {
     ElMessage.warning(typeof detail === "string" ? detail : "数据校验失败");
